@@ -44,7 +44,7 @@ per table, all SQL), Template Method (`BaseReport`).
 
 ### Next steps, in order
 1. Phase 9 (`feat/polish`): review, PR, merge. After that every phase of the brief is on `main`.
-2. Rojan: add `docs/design/erd.png` and `docs/design/reference.png`, create the "Protect main"
+2. Nicole: add `docs/design/erd.png` and `docs/design/reference.png`, create the "Protect main"
    ruleset (Open items below), and decide the deployment target (`docs/DEPLOYMENT.md` section 2).
 3. Before the defense: `python scripts\init_db.py && python seed.py`, then walk through `docs/DEMO.md` once.
 
@@ -52,7 +52,7 @@ per table, all SQL), Template Method (`BaseReport`).
 - **Branch protection:** create the "Protect main" ruleset in GitHub (Settings -> Rules -> Rulesets):
   target the default branch; tick Restrict deletions, Block force pushes, Require a pull request
   (0 approvals), Require status checks with the check named `checks` and "up to date" on. Leave the rest off.
-- `docs/design/erd.png` and `docs/design/reference.png` are still missing from the repo (needs the files from Rojan).
+- `docs/design/erd.png` and `docs/design/reference.png` are still missing from the repo (needs the files from Nicole).
 - Decided 2026-10-17: "Change Photo" shipped in Phase 2; "Forgot password?" is an admin "Reset password"
   action in Phase 3 (the brief has no email service), and the login page says "Ask an administrator".
 

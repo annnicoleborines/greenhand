@@ -48,7 +48,7 @@ database, so they can be regenerated after any UI change.
 
 ```powershell
 # 1. Clone and enter the project
-git clone https://github.com/Rojan2003/greenhands.git
+git clone https://github.com/annnicoleborines/greenhand.git
 cd greenhands
 
 # 2. Create and activate a virtual environment, then install every dependency
