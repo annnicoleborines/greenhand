@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% from "partials/_badge.html" import status_badge %}
+{% block title %}{{ activity.title }} - GreenHands{% endblock %}
+{% set date_text = activity.activity_date.strftime('%A, %B %d, %Y') %}
+{% set time_text = activity.start_time.strftime('%I:%M %p').lstrip('0') ~ " - " ~ activity.end_time.strftime('%I:%M %p').lstrip('0') %}
+{% block page_header %}
+<div class="mb-6">
+  <a href="{{ url_for('activities.list_activities') }}" class="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline">
+    <span aria-hidden="true">&larr;</span> Back to activities
+  </a>
+  <div class="mt-2 flex flex-wrap items-center gap-3">
+    <h1 class="text-2xl font-bold text-brand-dark">{{ activity.title }}</h1>
+    {{ status_badge(activity.status) }}
+  </div>
+  <p class="mt-1 text-sm text-gray-500">{{ date_text }} &middot; {{ time_text }} &middot; {{ location.location_name }}</p>
+</div>
+{% endblock %}
+{% block content %}
+<div class="grid gap-6 lg:grid-cols-3">
+  <div class="space-y-6 lg:col-span-2">
+    <section class="card p-6">
+      <h2 class="text-lg font-bold text-brand-dark">About this activity</h2>
+      <p class="mt-2 text-sm whitespace-pre-line {% if activity.description %}text-gray-700{% else %}text-gray-400 italic{% endif %}">{{ activity.description or "No description provided." }}</p>
+    </section>
+
+    <section class="card p-6">
+      <h2 class="text-lg font-bold text-brand-dark">What to bring</h2>
+      <p class="mt-2 text-sm whitespace-pre-line {% if activity.requirements %}text-gray-700{% else %}text-gray-400 italic{% endif %}">{{ activity.requirements or "No special requirements." }}</p>
+    </section>
+
+    <section class="card p-6">
+      <h2 class="text-lg font-bold text-brand-dark">Location</h2>
+      <p class="mt-2 flex items-center gap-1.5 font-semibold text-gray-800"><span class="text-gray-400" aria-hidden="true">{{ nav_icon("pin") }}</span>{{ location.location_name }}</p>
+      <p class="mt-1 text-sm text-gray-700">{{ location.address }}</p>
+      {% if location.details %}
+      <p class="mt-2 text-sm text-gray-500">{{ location.details }}</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="space-y-6">
+    {# Slots are computed from PENDING + APPROVED registrations; nothing is stored. #}
+    <section class="card p-6">
+      <h2 class="text-lg font-bold text-brand-dark">Volunteer slots</h2>
+      {% if activity.is_full %}
+      <p class="mt-3 text-2xl font-bold text-red-600">Full</p>
+      <p class="text-sm text-gray-500">All {{ activity.max_volunteers }} slots are taken.</p>
+      {% else %}
+      <p class="mt-3 text-2xl font-bold text-brand">{{ activity.available_slots }} of {{ activity.max_volunteers }} slots left</p>
+      {% endif %}
+
+      {# ---- what the volunteer can do: one of the states below (admins get none) ---- #}
+      {% if current_user.role_name == "ADMIN" %}
+      <p id="register-hint" class="mt-5 text-center text-sm text-gray-400">Administrators cannot register for activities.</p>
+
+      {% elif registration and registration.status.value in ("PENDING", "APPROVED") %}
+      <div class="mt-5 rounded-lg bg-brand-light px-4 py-3 text-sm text-brand-dark" role="status">
+        <p class="flex items-center gap-2 font-semibold">You are registered {{ status_badge(registration.status) }}</p>
+        <p class="mt-1 text-gray-600">
+          {% if registration.status.value == "PENDING" %}An administrator will review your request.{% else %}See you there!{% endif %}
+        </p>
+        <a href="{{ url_for('registrations.list_registrations') }}" class="mt-2 inline-block text-sm font-medium text-brand hover:underline">View my registrations</a>
+      </div>
+
+      {% elif registration and registration.status.value in ("REJECTED", "COMPLETED") %}
+      <div class="mt-5 rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-600" role="status">
+        <p class="flex items-center gap-2 font-semibold text-gray-800">Your registration {{ status_badge(registration.status) }}</p>
+        {% if registration.status.value == "REJECTED" and registration.remarks %}<p class="mt-1">{{ registration.remarks }}</p>{% endif %}
+      </div>
+
+      {% elif can_register %}
+      <form method="post" action="{{ url_for('activities.register', activity_id=activity.id) }}" class="mt-5">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-primary w-full">{% if registration %}Register again{% else %}Register{% endif %}</button>
+      </form>
+      <p id="register-hint" class="mt-2 text-center text-xs text-gray-400">Your request will be reviewed by an administrator.</p>
+
+      {% else %}
+      <button type="button" disabled aria-describedby="register-hint"
+              class="btn-primary mt-5 w-full opacity-60 cursor-not-allowed">Register</button>
+      <p id="register-hint" class="mt-2 text-center text-xs text-gray-400">
+        {% if activity.is_full %}This activity is full.{% else %}Registration is closed.{% endif %}
+      </p>
+      {% endif %}
+    </section>
+
+    <section class="card">
+      <div class="px-6 py-4 border-b border-gray-100">
+        <h2 class="text-lg font-bold text-brand-dark">Details</h2>
+      </div>
+      <dl class="grid gap-y-4 px-6 py-5 text-sm">
+        {% set rows = [
+          ("Date", date_text),
+          ("Time", time_text),
+          ("Duration", activity.duration_hours ~ " hours"),
+          ("Max volunteers", activity.max_volunteers),
+          ("Status", activity.status.value|capitalize),
+        ] %}
+        {% for label, value in rows %}
+        <div>
+          <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ label }}</dt>
+          <dd class="mt-1 text-gray-800">{{ value }}</dd>
+        </div>
+        {% endfor %}
+      </dl>
+    </section>
+  </aside>
+</div>
+
+<div class="mt-8">
+  <a href="{{ url_for('activities.list_activities') }}" class="btn-secondary">Back to activities</a>
+</div>
+{% endblock %}

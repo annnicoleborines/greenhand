@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Manage Locations - GreenHands{% endblock %}
+{% block page_title %}Manage Locations{% endblock %}
+{% block page_subtitle %}The places where tree-planting activities take place.{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="flex items-center justify-between gap-4 px-5 py-4 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-brand-dark">{{ locations|length }} location{{ "" if locations|length == 1 else "s" }}</h2>
+    <a href="{{ url_for('admin_locations.new_location') }}" class="btn-primary">New Location</a>
+  </div>
+
+  {% if locations %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+        <tr>
+          <th scope="col" class="px-5 py-3">Name</th>
+          <th scope="col" class="px-5 py-3">Address</th>
+          <th scope="col" class="px-5 py-3">Details</th>
+          <th scope="col" class="px-5 py-3 text-right">Activities</th>
+          <th scope="col" class="px-5 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for location in locations %}
+        <tr class="hover:bg-brand-light/40">
+          <td class="px-5 py-3 font-medium">{{ location.location_name }}</td>
+          <td class="px-5 py-3 text-gray-500">{{ location.address }}</td>
+          <td class="px-5 py-3 text-gray-500 max-w-xs truncate" title="{{ location.details or '' }}">{{ location.details or "-" }}</td>
+          <td class="px-5 py-3 text-right">
+            <span class="badge-{{ 'green' if location.activity_count else 'gray' }}">{{ location.activity_count }}</span>
+          </td>
+          <td class="px-5 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <a href="{{ url_for('admin_locations.edit_location', location_id=location.id) }}" class="btn-outline-blue text-xs py-1">Edit</a>
+              {% if location.activity_count %}
+              {# The service refuses the delete anyway; a disabled button explains why up front. #}
+              <button type="button" class="btn-outline-red text-xs py-1 opacity-50 cursor-not-allowed" disabled
+                      title="Cancel or move its activities first">Delete</button>
+              {% else %}
+              <form method="post" action="{{ url_for('admin_locations.delete_location', location_id=location.id) }}"
+                    onsubmit="return confirm('Delete {{ location.location_name }}? This cannot be undone.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline-red text-xs py-1">Delete</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">No locations yet.</p>
+    <p class="mt-1 text-sm text-gray-400">Add the first place where volunteers will plant trees.</p>
+    <a href="{{ url_for('admin_locations.new_location') }}" class="btn-primary mt-4">New Location</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

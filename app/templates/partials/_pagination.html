@@ -1,0 +1,28 @@
+{# Pagination bar for any services.pagination.Page (rendered only when there are rows): "Showing 21-40 of 95" + Previous / Next.
+   `endpoint` is the list route; extra keyword arguments (search text, filters) are kept
+   in every link so the user does not lose them when changing page. #}
+{% macro paginate(page_obj, endpoint, noun="rows") -%}
+{% if page_obj.total %}
+<nav class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 px-5 py-4 border-t border-gray-100 text-sm"
+     aria-label="Pagination">
+  <p class="text-gray-500">
+    Showing <span class="font-semibold text-gray-700">{{ page_obj.start }}-{{ page_obj.end }}</span> of {{ page_obj.total }} {{ noun }}
+  </p>
+  {% if page_obj.pages > 1 %}
+  <div class="flex items-center gap-2">
+    {% if page_obj.has_prev %}
+    <a href="{{ url_for(endpoint, page=page_obj.prev_page, **kwargs) }}" class="btn-secondary py-1.5 px-3 text-xs" rel="prev">Previous</a>
+    {% else %}
+    <span class="btn-secondary py-1.5 px-3 text-xs opacity-50 cursor-not-allowed" aria-disabled="true">Previous</span>
+    {% endif %}
+    <span class="text-gray-500">Page {{ page_obj.page }} of {{ page_obj.pages }}</span>
+    {% if page_obj.has_next %}
+    <a href="{{ url_for(endpoint, page=page_obj.next_page, **kwargs) }}" class="btn-secondary py-1.5 px-3 text-xs" rel="next">Next</a>
+    {% else %}
+    <span class="btn-secondary py-1.5 px-3 text-xs opacity-50 cursor-not-allowed" aria-disabled="true">Next</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}

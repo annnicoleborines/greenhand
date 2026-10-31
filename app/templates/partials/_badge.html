@@ -1,0 +1,11 @@
+{# Status pill. Colours follow the brief: green / amber / red / gray. #}
+{% macro status_badge(status) -%}
+{% set value = status.value if status.value is defined else status %}
+{% set colour = {
+  "OPEN": "green", "APPROVED": "green", "COMPLETED": "green", "ACTIVE": "green",
+  "PENDING": "amber",
+  "REJECTED": "red", "INACTIVE": "red",
+  "CANCELLED": "gray", "CLOSED": "gray",
+}.get(value, "gray") %}
+<span class="badge-{{ colour }}">{{ value|capitalize }}</span>
+{%- endmacro %}

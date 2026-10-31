@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "partials/_forms.html" import text_field %}
+{% block title %}Sign up - GreenHands{% endblock %}
+{% block body %}
+<div class="min-h-screen bg-page flex items-center justify-center px-4 py-10">
+  <div class="w-full max-w-2xl">
+    <a href="{{ url_for('auth.login') }}" class="flex items-center gap-2 font-bold text-xl text-brand mb-6">
+      <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="" class="h-9 w-9">
+      GreenHands
+    </a>
+    <div class="card p-6 sm:p-8">
+      <h1 class="text-2xl font-bold text-brand-dark">Sign up as a Volunteer</h1>
+      <p class="mt-1 text-sm text-gray-500">Create your account to register for tree-planting activities.</p>
+
+      <div class="mt-6">{% include "partials/_flash.html" %}</div>
+
+      <form method="post" action="{{ url_for('auth.signup') }}" class="space-y-5" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="grid gap-5 sm:grid-cols-2">
+          {{ text_field("first_name", "First name", form, errors, required=True, autocomplete="given-name") }}
+          {{ text_field("last_name", "Last name", form, errors, required=True, autocomplete="family-name") }}
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          {{ text_field("username", "Username", form, errors, required=True, autocomplete="username", hint="3-50 letters, numbers or underscores") }}
+          {{ text_field("email", "Email", form, errors, required=True, type="email", autocomplete="email") }}
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          {{ text_field("password", "Password", form, errors, required=True, type="password", autocomplete="new-password", hint="At least 8 characters with a letter and a number") }}
+          {{ text_field("confirm_password", "Confirm password", form, errors, required=True, type="password", autocomplete="new-password") }}
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          {{ text_field("phone", "Contact number", form, errors, autocomplete="tel") }}
+          {{ text_field("address", "Address", form, errors, autocomplete="street-address") }}
+        </div>
+
+        <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
+          <p class="text-sm text-gray-600">
+            Already have an account?
+            <a href="{{ url_for('auth.login') }}" class="font-semibold text-brand hover:underline">Log in</a>
+          </p>
+          <button type="submit" class="btn-primary py-3 px-6">Create account</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

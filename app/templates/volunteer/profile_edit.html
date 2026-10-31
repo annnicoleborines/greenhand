@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "partials/_forms.html" import text_field %}
+{% block title %}Edit Profile - GreenHands{% endblock %}
+{% block page_title %}Edit Profile{% endblock %}
+{% block page_subtitle %}Keep your contact details and emergency contact up to date.{% endblock %}
+{% block content %}
+<section class="card max-w-3xl p-6 sm:p-8">
+  <form method="post" action="{{ url_for('profile.edit') }}" class="space-y-8" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <fieldset>
+      <legend class="text-base font-bold text-brand-dark mb-4">Contact details</legend>
+      <div class="space-y-5">
+        <div class="grid gap-5 sm:grid-cols-2">
+          {{ text_field("first_name", "First name", form, errors, required=True, autocomplete="given-name") }}
+          {{ text_field("last_name", "Last name", form, errors, required=True, autocomplete="family-name") }}
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          {{ text_field("phone", "Phone number", form, errors, autocomplete="tel", hint="Digits, spaces, + ( ) and - only") }}
+          {{ text_field("birth_date", "Birth date", form, errors, type="date", autocomplete="bday", hint="Volunteers must be at least 13 years old") }}
+        </div>
+        {{ text_field("address", "Address", form, errors, autocomplete="street-address") }}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="text-base font-bold text-brand-dark mb-4">Emergency contact</legend>
+      <div class="grid gap-5 sm:grid-cols-2">
+        {{ text_field("emergency_contact_name", "Emergency contact name", form, errors) }}
+        {{ text_field("emergency_contact_phone", "Emergency contact phone", form, errors, autocomplete="tel") }}
+      </div>
+    </fieldset>
+
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2 border-t border-gray-100">
+      <a href="{{ url_for('profile.view') }}" class="btn-secondary mt-4">Cancel</a>
+      <button type="submit" class="btn-primary mt-4 px-6">Save changes</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

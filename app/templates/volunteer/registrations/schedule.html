@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% from "partials/_badge.html" import status_badge %}
+{% block title %}My Schedule - GreenHands{% endblock %}
+{% block page_title %}My Schedule{% endblock %}
+{% block page_subtitle %}Your upcoming activities and the ones you have already joined.{% endblock %}
+{% block content %}
+{% macro row(reg) -%}
+<li class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+  <div class="min-w-0">
+    <div class="flex flex-wrap items-center gap-2">
+      <a href="{{ url_for('activities.detail', activity_id=reg.activity_id) }}" class="font-semibold text-brand-dark hover:underline">{{ reg.activity_title }}</a>
+      {{ status_badge(reg.status) }}
+    </div>
+    <p class="mt-1 text-sm text-gray-500">
+      {{ reg.activity_date.strftime('%a, %b %d, %Y') }} &middot;
+      {{ reg.activity_start_time.strftime('%I:%M %p').lstrip('0') }} - {{ reg.activity_end_time.strftime('%I:%M %p').lstrip('0') }} &middot;
+      {{ reg.location_name }}
+    </p>
+  </div>
+  <span class="text-sm text-gray-500 whitespace-nowrap">{{ reg.activity_hours }} hours</span>
+</li>
+{%- endmacro %}
+
+<div class="grid gap-4 sm:grid-cols-3">
+  {% set stats = [
+    ("Upcoming", schedule.upcoming|length, "bg-green-100 text-green-700", "calendar"),
+    ("Completed", schedule.history|length, "bg-blue-100 text-blue-700", "list"),
+    ("Hours volunteered", schedule.hours, "bg-amber-100 text-amber-700", "chart"),
+  ] %}
+  {% for label, value, colour, icon in stats %}
+  <div class="card p-5 flex items-center gap-4">
+    <span class="h-12 w-12 rounded-lg {{ colour }} flex items-center justify-center" aria-hidden="true">{{ nav_icon(icon) }}</span>
+    <span>
+      <span class="block text-sm text-gray-500">{{ label }}</span>
+      <span class="block text-2xl font-bold text-brand-dark">{{ value }}</span>
+    </span>
+  </div>
+  {% endfor %}
+</div>
+
+<section class="card mt-8">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-brand-dark">Upcoming</h2>
+    <div class="flex items-center gap-4">
+      <a href="{{ url_for('registrations.report') }}" class="text-sm font-medium text-brand hover:underline">My activity report</a>
+      <a href="{{ url_for('registrations.list_registrations') }}" class="text-sm font-medium text-brand hover:underline">Manage registrations</a>
+    </div>
+  </div>
+  {% if schedule.upcoming %}
+  <ul class="divide-y divide-gray-100">{% for reg in schedule.upcoming %}{{ row(reg) }}{% endfor %}</ul>
+  {% else %}
+  <div class="px-5 py-10 text-center">
+    <p class="text-gray-500">Nothing scheduled yet.</p>
+    <a href="{{ url_for('activities.list_activities') }}" class="btn-primary mt-4">Browse Activities</a>
+  </div>
+  {% endif %}
+</section>
+
+<section class="card mt-8">
+  <div class="px-5 py-4 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-brand-dark">History</h2>
+  </div>
+  {% if schedule.history %}
+  <ul class="divide-y divide-gray-100">{% for reg in schedule.history %}{{ row(reg) }}{% endfor %}</ul>
+  {% else %}
+  <div class="px-5 py-10 text-center">
+    <p class="text-gray-500">No past activities yet.</p>
+    <p class="mt-1 text-sm text-gray-400">Activities you attended will be listed here after their date.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

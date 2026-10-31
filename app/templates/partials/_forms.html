@@ -1,0 +1,66 @@
+{# Reusable form field: label, input, inline error, optional hint. Used by every form. #}
+{% macro text_field(name, label, form, errors, required=False, type="text", autocomplete=None, hint=None, readonly=False) -%}
+<div>
+  <label for="{{ name }}" class="block text-sm font-medium text-gray-700">
+    {{ label }}{% if required %} <span class="text-red-600" aria-hidden="true">*</span>{% endif %}
+  </label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}"
+         value="{{ '' if type == 'password' else (form.get(name) or '') }}"
+         {% if required %}required aria-required="true"{% endif %}
+         {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+         {% if readonly %}readonly{% endif %}
+         {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% elif hint %}aria-describedby="{{ name }}-hint"{% endif %}
+         class="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2
+                {% if errors.get(name) %}border-red-400 focus:border-red-500 focus:ring-red-200{% else %}border-gray-300 focus:border-brand focus:ring-brand/30{% endif %}
+                {% if readonly %}bg-gray-50 text-gray-500{% endif %}">
+  {% if errors.get(name) %}
+  <p id="{{ name }}-error" class="mt-1 text-xs text-red-600">{{ errors.get(name) }}</p>
+  {% elif hint %}
+  <p id="{{ name }}-hint" class="mt-1 text-xs text-gray-400">{{ hint }}</p>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{# Drop-down. `options` is a list of (value, text) pairs; `placeholder` adds an empty first choice. #}
+{% macro select_field(name, label, options, form, errors, required=False, placeholder=None, hint=None) -%}
+<div>
+  <label for="{{ name }}" class="block text-sm font-medium text-gray-700">
+    {{ label }}{% if required %} <span class="text-red-600" aria-hidden="true">*</span>{% endif %}
+  </label>
+  {% set current = (form.get(name) or '')|string %}
+  <select id="{{ name }}" name="{{ name }}"
+          {% if required %}required aria-required="true"{% endif %}
+          {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% elif hint %}aria-describedby="{{ name }}-hint"{% endif %}
+          class="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2
+                 {% if errors.get(name) %}border-red-400 focus:border-red-500 focus:ring-red-200{% else %}border-gray-300 focus:border-brand focus:ring-brand/30{% endif %}">
+    {% if placeholder %}<option value="">{{ placeholder }}</option>{% endif %}
+    {% for value, text in options %}
+    <option value="{{ value }}" {% if current == value|string %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+  </select>
+  {% if errors.get(name) %}
+  <p id="{{ name }}-error" class="mt-1 text-xs text-red-600">{{ errors.get(name) }}</p>
+  {% elif hint %}
+  <p id="{{ name }}-hint" class="mt-1 text-xs text-gray-400">{{ hint }}</p>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{# Multi-line text. Same label / error / hint layout as text_field. #}
+{% macro textarea_field(name, label, form, errors, required=False, rows=3, hint=None) -%}
+<div>
+  <label for="{{ name }}" class="block text-sm font-medium text-gray-700">
+    {{ label }}{% if required %} <span class="text-red-600" aria-hidden="true">*</span>{% endif %}
+  </label>
+  <textarea id="{{ name }}" name="{{ name }}" rows="{{ rows }}"
+            {% if required %}required aria-required="true"{% endif %}
+            {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% elif hint %}aria-describedby="{{ name }}-hint"{% endif %}
+            class="mt-1 block w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2
+                   {% if errors.get(name) %}border-red-400 focus:border-red-500 focus:ring-red-200{% else %}border-gray-300 focus:border-brand focus:ring-brand/30{% endif %}">{{ form.get(name) or '' }}</textarea>
+  {% if errors.get(name) %}
+  <p id="{{ name }}-error" class="mt-1 text-xs text-red-600">{{ errors.get(name) }}</p>
+  {% elif hint %}
+  <p id="{{ name }}-hint" class="mt-1 text-xs text-gray-400">{{ hint }}</p>
+  {% endif %}
+</div>
+{%- endmacro %}

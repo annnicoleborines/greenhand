@@ -1,0 +1,52 @@
+[project]
+name = "greenhands"
+version = "0.1.0"
+description = "Tree-planting volunteer registration and scheduling web app"
+requires-python = ">=3.12"
+
+# ---------------------------------------------------------------------------
+# ruff: linter + formatter
+# ---------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+exclude = ["venv", ".venv", ".tools", "database"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import order)
+    "UP",  # pyupgrade (modern syntax)
+    "B",   # bugbear (common bugs)
+    "SIM", # simplify
+    "N",   # naming
+]
+ignore = ["B008"]  # function call in argument default (used by Flask/Pydantic patterns)
+
+
+# ---------------------------------------------------------------------------
+# mypy: static type checking
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+exclude = ["venv/", ".venv/", ".tools/", "build/"]
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["flask_login.*", "flask_wtf.*", "wtforms.*", "flask_limiter.*"]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests/unit", "tests/integration"]
+addopts = "-q --strict-markers"
+markers = [
+    "integration: tests that need a real MySQL/MariaDB database",
+    "e2e: Playwright browser tests",
+]

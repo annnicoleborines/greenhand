@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "partials/_badge.html" import status_badge %}
+{% block title %}My Registrations - GreenHands{% endblock %}
+{% block page_title %}My Registrations{% endblock %}
+{% block page_subtitle %}Every activity you signed up for, and where each request stands.{% endblock %}
+{% block content %}
+<section class="card">
+  {# ---------- Tabs: one per status, with counts ---------- #}
+  <nav class="flex gap-1 overflow-x-auto border-b border-gray-100 px-3 pt-3" aria-label="Filter by status">
+    {% for value, label in tabs %}
+    {% set count = mine.total if value == "" else mine.counts[value] %}
+    <a href="{{ url_for('registrations.list_registrations', status=value or none) }}"
+       {% if value == status_filter %}aria-current="page"{% endif %}
+       class="whitespace-nowrap rounded-t-lg px-3 py-2 text-sm font-medium border-b-2
+              {% if value == status_filter %}border-brand text-brand-dark{% else %}border-transparent text-gray-500 hover:text-brand-dark{% endif %}">
+      {{ label }} <span class="ml-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{{ count }}</span>
+    </a>
+    {% endfor %}
+  </nav>
+
+  {% if mine.items %}
+  <ul class="divide-y divide-gray-100">
+    {% for reg in mine.items %}
+    <li id="registration-{{ reg.id }}" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="{{ url_for('activities.detail', activity_id=reg.activity_id) }}" class="font-semibold text-brand-dark hover:underline">{{ reg.activity_title }}</a>
+          {{ status_badge(reg.status) }}
+          {% if reg.activity_status and reg.activity_status.value == "CANCELLED" %}
+          <span class="badge-gray">Activity cancelled</span>
+          {% endif %}
+        </div>
+        <p class="mt-1 text-sm text-gray-500">
+          {{ reg.activity_date.strftime('%a, %b %d, %Y') }} &middot;
+          {{ reg.activity_start_time.strftime('%I:%M %p').lstrip('0') }} - {{ reg.activity_end_time.strftime('%I:%M %p').lstrip('0') }} &middot;
+          {{ reg.location_name }}
+        </p>
+        <p class="mt-1 text-xs text-gray-400">
+          Requested {{ reg.registration_date.strftime('%b %d, %Y') if reg.registration_date else '' }}
+          {% if reg.reviewed_at %} &middot; Reviewed {{ reg.reviewed_at.strftime('%b %d, %Y') }}{% endif %}
+        </p>
+        {% if reg.remarks %}
+        <p class="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600"><span class="font-medium text-gray-700">Remarks:</span> {{ reg.remarks }}</p>
+        {% endif %}
+      </div>
+      <div class="flex shrink-0 items-center gap-2">
+        {% if reg.can_cancel() %}
+        <form method="post" action="{{ url_for('registrations.cancel', registration_id=reg.id, status=status_filter or none) }}"
+              onsubmit="return confirm('Cancel your registration for {{ reg.activity_title }}? You can register again while the activity is open.');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn-outline-red text-xs py-1.5">Cancel registration<span class="sr-only"> for {{ reg.activity_title }}</span></button>
+        </form>
+        {% elif reg.status.value == "CANCELLED" and reg.activity_status and reg.activity_status.value == "OPEN" and not reg.activity_has_started() %}
+        <a href="{{ url_for('activities.detail', activity_id=reg.activity_id) }}" class="btn-secondary text-xs py-1.5">Register again</a>
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">{% if status_filter %}No {{ status_filter|lower }} registrations.{% else %}You have not registered for any activity yet.{% endif %}</p>
+    <p class="mt-1 text-sm text-gray-400">Browse the open activities and pick one near you.</p>
+    <a href="{{ url_for('activities.list_activities') }}" class="btn-primary mt-4">Browse Activities</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

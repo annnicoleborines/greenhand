@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% from "partials/_badge.html" import status_badge %}
+{% from "partials/_pagination.html" import paginate %}
+{% block title %}Manage Activities - GreenHands{% endblock %}
+{% block page_title %}Manage Activities{% endblock %}
+{% block page_subtitle %}Create tree-planting activities, edit them, change their status or cancel them.{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="flex flex-col gap-4 px-5 py-4 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-lg font-bold text-brand-dark">
+      {{ page.total }} {% if status_filter %}{{ status_filter|lower }} {% endif %}{{ "activity" if page.total == 1 else "activities" }}
+    </h2>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <form method="get" action="{{ url_for('admin_activities.list_activities') }}" class="flex gap-2">
+        <label for="status" class="sr-only">Filter by status</label>
+        <select id="status" name="status"
+                class="block rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-brand focus:ring-brand/30">
+          <option value="">All statuses</option>
+          {% for value, text in status_choices %}
+          <option value="{{ value }}" {% if value == status_filter %}selected{% endif %}>{{ text }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn-secondary">Filter</button>
+      </form>
+      <a href="{{ url_for('admin_activities.new_activity') }}" class="btn-primary">New Activity</a>
+    </div>
+  </div>
+
+  {% if page.items %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+        <tr>
+          <th scope="col" class="px-5 py-3">Activity</th>
+          <th scope="col" class="px-5 py-3">Date</th>
+          <th scope="col" class="px-5 py-3">Time</th>
+          <th scope="col" class="px-5 py-3">Location</th>
+          <th scope="col" class="px-5 py-3">Slots</th>
+          <th scope="col" class="px-5 py-3">Status</th>
+          <th scope="col" class="px-5 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for activity in page.items %}
+        {# The action URLs carry the filter and page so the redirect returns here. #}
+        {% set args = {"activity_id": activity.id, "status": status_filter or none, "page": page.page} %}
+        <tr class="hover:bg-brand-light/40 align-top">
+          <td class="px-5 py-3">
+            <span class="block font-medium">{{ activity.title }}</span>
+            <span class="block text-xs text-gray-400">#{{ activity.id }}</span>
+          </td>
+          <td class="px-5 py-3 text-gray-500 whitespace-nowrap">{{ activity.activity_date.strftime('%b %d, %Y') }}</td>
+          <td class="px-5 py-3 text-gray-500 whitespace-nowrap">{{ activity.start_time.strftime('%H:%M') }} - {{ activity.end_time.strftime('%H:%M') }}</td>
+          <td class="px-5 py-3 text-gray-500">{{ activity.location_name }}</td>
+          <td class="px-5 py-3 whitespace-nowrap">
+            <span class="font-medium {% if activity.is_full %}text-red-600{% endif %}">{{ activity.taken_slots }}</span>
+            <span class="text-gray-400">/ {{ activity.max_volunteers }}</span>
+            <span class="block text-xs text-gray-400">{{ activity.available_slots }} left</span>
+          </td>
+          <td class="px-5 py-3">{{ status_badge(activity.status) }}</td>
+          <td class="px-5 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              <a href="{{ url_for('admin_activities.edit_activity', activity_id=activity.id) }}" class="btn-outline-blue text-xs py-1">Edit</a>
+              {% if activity.status != "CANCELLED" %}
+              <form method="post" action="{{ url_for('admin_activities.change_status', **args) }}" class="flex gap-1"
+                    onsubmit="return confirm('Change the status of {{ activity.title }}? Choosing Cancelled notifies every registered volunteer.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <label for="status-{{ activity.id }}" class="sr-only">New status for {{ activity.title }}</label>
+                <select id="status-{{ activity.id }}" name="status"
+                        class="rounded-lg border border-gray-300 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:border-brand focus:ring-brand/30">
+                  {% for value, text in status_choices %}
+                  <option value="{{ value }}" {% if value == activity.status.value %}selected{% endif %}>{{ text }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn-secondary text-xs py-1 px-2">Set</button>
+              </form>
+              <form method="post" action="{{ url_for('admin_activities.delete_activity', **args) }}"
+                    onsubmit="return confirm('Delete {{ activity.title }}? If volunteers have registered, the activity is cancelled instead and they are notified.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline-red text-xs py-1">Delete</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">{% if status_filter %}No {{ status_filter|lower }} activities.{% else %}No activities yet.{% endif %}</p>
+    <p class="mt-1 text-sm text-gray-400">Create one and volunteers will be able to register for it.</p>
+    <a href="{{ url_for('admin_activities.new_activity') }}" class="btn-primary mt-4">New Activity</a>
+  </div>
+  {% endif %}
+  {{ paginate(page, "admin_activities.list_activities", noun="activities", status=status_filter or none) }}
+</section>
+{% endblock %}

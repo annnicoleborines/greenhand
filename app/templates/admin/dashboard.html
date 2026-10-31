@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% from "partials/_badge.html" import status_badge %}
+{% block title %}Admin Dashboard - GreenHands{% endblock %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block page_subtitle %}Overview of activities, volunteers and registrations.{% endblock %}
+{% block content %}
+<div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+  {# Each card opens the matching list page. #}
+  {% set stats = [
+    ("Total Activities", overview.total_activities, "bg-green-100 text-green-700", "tree", url_for("admin_activities.list_activities")),
+    ("Total Volunteers", overview.total_volunteers, "bg-blue-100 text-blue-700", "users", url_for("admin_volunteers.list_volunteers")),
+    ("Pending Registrations", overview.pending_registrations, "bg-amber-100 text-amber-700", "list", url_for("admin_registrations.list_registrations", status="PENDING")),
+    ("Approved Registrations", overview.approved_registrations, "bg-emerald-100 text-emerald-700", "chart", url_for("admin_registrations.list_registrations", status="APPROVED")),
+  ] %}
+  {% for label, value, colour, icon, url in stats %}
+  <a href="{{ url }}" class="card p-5 flex items-center gap-4 hover:shadow-md hover:border-brand/40 transition">
+    <span class="h-12 w-12 rounded-lg {{ colour }} flex items-center justify-center" aria-hidden="true">{{ nav_icon(icon) }}</span>
+    <span>
+      <span class="block text-sm text-gray-500">{{ label }}</span>
+      <span class="block text-2xl font-bold text-brand-dark">{{ value }}</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+
+<section class="card mt-8">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-brand-dark">Recent Registrations</h2>
+  </div>
+  {% if overview.recent_registrations %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+        <tr>
+          <th scope="col" class="px-5 py-3">ID</th>
+          <th scope="col" class="px-5 py-3">Volunteer</th>
+          <th scope="col" class="px-5 py-3">Activity</th>
+          <th scope="col" class="px-5 py-3">Date</th>
+          <th scope="col" class="px-5 py-3">Status</th>
+          <th scope="col" class="px-5 py-3"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for reg in overview.recent_registrations %}
+        <tr class="hover:bg-brand-light/40">
+          <td class="px-5 py-3 text-gray-500">#{{ reg.id }}</td>
+          <td class="px-5 py-3 font-medium">{{ reg.volunteer_name }}</td>
+          <td class="px-5 py-3">{{ reg.activity_title }}</td>
+          <td class="px-5 py-3 text-gray-500">{{ reg.registration_date.strftime('%b %d, %Y') if reg.registration_date else '' }}</td>
+          <td class="px-5 py-3">{{ status_badge(reg.status) }}</td>
+          <td class="px-5 py-3 text-right">
+            <a href="{{ url_for('admin_registrations.list_registrations', status=reg.status.value, _anchor='registration-' ~ reg.id) }}" class="btn-primary py-1.5 px-3 text-xs">
+              {% if reg.status.value == "PENDING" %}Review{% else %}View{% endif %}<span class="sr-only"> registration #{{ reg.id }}</span>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">No registrations yet.</p>
+    <p class="mt-1 text-sm text-gray-400">New sign-ups will appear here as volunteers register for activities.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

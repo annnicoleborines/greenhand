@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/_forms.html" import text_field, select_field %}
+{% block title %}{{ result.title }} - GreenHands{% endblock %}
+{% block page_header %}
+<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+  <div>
+    <a href="{{ url_for(back_url_endpoint) }}" class="inline-flex items-center gap-1 text-sm font-medium text-brand hover:underline"><span aria-hidden="true">&larr;</span> Back</a>
+    <h1 class="mt-2 text-2xl font-bold text-brand-dark">{{ result.title }}</h1>
+    {% if info %}<p class="mt-1 text-sm text-gray-500">{{ info.description }}</p>{% endif %}
+  </div>
+  <div class="flex gap-2">
+    <a href="{{ url_for(csv_url_endpoint, **url_args) }}" class="btn-secondary" download>Download CSV</a>
+    <a href="{{ url_for(print_url_endpoint, **url_args) }}" class="btn-primary" target="_blank" rel="noopener">Printable view</a>
+  </div>
+</div>
+{% endblock %}
+{% block content %}
+{% if filters is not none and info and info.uses_filters %}
+{% set form = filters.as_query_args() %}
+<form method="get" action="{{ url_for('admin_reports.show', name=info.name) }}" class="card p-4 sm:p-6" role="search" aria-label="Filter report">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {{ text_field("date_from", "From date", form, {}, type="date") }}
+    {{ text_field("date_to", "To date", form, {}, type="date") }}
+    {{ select_field("status", "Activity status", status_choices, form, {}, placeholder="All statuses") }}
+    <div class="flex items-end gap-3">
+      <button type="submit" class="btn-primary">Apply</button>
+      {% if filters.is_filtered %}
+      <a href="{{ url_for('admin_reports.show', name=info.name) }}" class="btn-secondary">Clear</a>
+      {% endif %}
+    </div>
+  </div>
+</form>
+{% endif %}
+
+{# ---------- Summary totals ---------- #}
+{% if summary %}
+<dl class="mt-6 grid gap-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+  {% for label, value in summary %}
+  <div class="card p-4">
+    <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ label }}</dt>
+    <dd class="mt-1 text-xl font-bold text-brand-dark">{{ value }}</dd>
+  </div>
+  {% endfor %}
+</dl>
+{% endif %}
+
+{# ---------- Table ---------- #}
+<section class="card mt-6">
+  {% if rows %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+        <tr>{% for column in result.columns %}<th scope="col" class="px-5 py-3 whitespace-nowrap">{{ column }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for row in rows %}
+        <tr class="hover:bg-brand-light/40">
+          {% for cell in row %}<td class="px-5 py-3 {% if loop.first %}font-medium{% else %}text-gray-600{% endif %}">{{ cell }}</td>{% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">{{ rows|length }} row{{ "" if rows|length == 1 else "s" }}</p>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">No data for this report{% if filters is not none and filters.is_filtered %} with these filters{% endif %}.</p>
+    {% if filters is not none and filters.is_filtered and info %}
+    <a href="{{ url_for('admin_reports.show', name=info.name) }}" class="btn-secondary mt-4">Clear filters</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

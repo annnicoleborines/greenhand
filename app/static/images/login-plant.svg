@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Green seedlings">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#14532d"/><stop offset="1" stop-color="#1E6B3A"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.35" r="0.6">
+      <stop offset="0" stop-color="#86efac" stop-opacity="0.35"/><stop offset="1" stop-color="#1E6B3A" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#sky)"/>
+  <rect width="800" height="1000" fill="url(#glow)"/>
+  <ellipse cx="400" cy="900" rx="520" ry="140" fill="#0f3d22"/>
+  <g stroke="#bbf7d0" stroke-width="10" stroke-linecap="round" fill="none">
+    <path d="M400 860V560"/><path d="M400 640c-70 0-120-50-130-120 70 0 120 50 130 120z" fill="#4ade80" stroke="none"/>
+    <path d="M400 700c70 0 120-50 130-120-70 0-120 50-130 120z" fill="#22c55e" stroke="none"/>
+    <path d="M250 860V700"/><path d="M250 760c-50 0-85-35-90-85 50 0 85 35 90 85z" fill="#4ade80" stroke="none"/>
+    <path d="M560 860V690"/><path d="M560 770c50 0 85-35 90-85-50 0-85 35-90 85z" fill="#22c55e" stroke="none"/>
+  </g>
+  <g fill="#86efac" opacity="0.5">
+    <circle cx="120" cy="180" r="6"/><circle cx="680" cy="140" r="4"/><circle cx="600" cy="300" r="5"/><circle cx="160" cy="420" r="4"/><circle cx="700" cy="480" r="6"/>
+  </g>
+</svg>

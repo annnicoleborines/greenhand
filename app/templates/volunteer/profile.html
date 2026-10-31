@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% from "partials/_avatar.html" import avatar %}
+{% block title %}My Profile - GreenHands{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+{% block page_subtitle %}Your contact details and emergency contact.{% endblock %}
+{% block content %}
+<div class="max-w-3xl space-y-6">
+  {# ---------- Photo + name card ---------- #}
+  <section class="card p-6 sm:p-8">
+    <div class="flex flex-col sm:flex-row sm:items-start gap-6">
+      {{ avatar(user, "h-24 w-24 text-3xl shrink-0", "bg-brand-light text-brand") }}
+      <div class="flex-1 min-w-0">
+        <h2 class="text-xl font-bold text-brand-dark">{{ user.full_name }}</h2>
+        <p class="text-sm text-gray-500 break-words">@{{ user.username }} &middot; {{ user.email }}</p>
+        {% if user.created_at %}
+        <p class="mt-1 text-xs text-gray-400">Volunteer since {{ user.created_at.strftime('%B %Y') }}</p>
+        {% endif %}
+
+        {# <details> gives an open/close button without any JavaScript. #}
+        <details class="mt-4">
+          <summary class="btn-secondary cursor-pointer list-none">Change Photo</summary>
+          <form method="post" action="{{ url_for('profile.photo') }}" enctype="multipart/form-data"
+                class="mt-3 flex flex-col sm:flex-row sm:items-end gap-3">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="flex-1 min-w-0">
+              <label for="photo" class="block text-sm font-medium text-gray-700">New photo</label>
+              <input id="photo" name="photo" type="file" required
+                     accept="image/png,image/jpeg,image/webp" aria-describedby="photo-hint"
+                     class="mt-1 block w-full text-sm text-gray-600
+                            file:mr-3 file:rounded-lg file:border-0 file:bg-brand-light file:px-3 file:py-2
+                            file:text-sm file:font-semibold file:text-brand hover:file:bg-brand/10">
+              <p id="photo-hint" class="mt-1 text-xs text-gray-400">PNG, JPG or WEBP, up to 2 MB.</p>
+            </div>
+            <button type="submit" class="btn-primary">Upload</button>
+          </form>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  {# ---------- Details card ---------- #}
+  <section class="card">
+    <div class="px-6 py-4 border-b border-gray-100">
+      <h2 class="text-lg font-bold text-brand-dark">Profile details</h2>
+    </div>
+    {% set profile = user.profile %}
+    {% set rows = [
+      ("First name", user.first_name),
+      ("Last name", user.last_name),
+      ("Username", user.username),
+      ("Email", user.email),
+      ("Phone number", user.phone),
+      ("Address", profile.address if profile else none),
+      ("Birth date", profile.birth_date.strftime('%b %d, %Y') if profile and profile.birth_date else none),
+      ("Emergency contact name", profile.emergency_contact_name if profile else none),
+      ("Emergency contact phone", profile.emergency_contact_phone if profile else none),
+    ] %}
+    <dl class="grid gap-x-8 gap-y-5 px-6 py-6 sm:grid-cols-2">
+      {% for label, value in rows %}
+      <div>
+        <dt class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ label }}</dt>
+        <dd class="mt-1 text-sm break-words {% if value %}text-gray-800{% else %}text-gray-400 italic{% endif %}">
+          {{ value or "Not provided" }}
+        </dd>
+      </div>
+      {% endfor %}
+    </dl>
+    <div class="flex flex-col sm:flex-row gap-3 px-6 py-4 border-t border-gray-100">
+      <a href="{{ url_for('profile.edit') }}" class="btn-primary">Edit Profile</a>
+      <a href="{{ url_for('profile.password') }}" class="btn-secondary">Change Password</a>
+    </div>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+{# Profile picture, or the user's initials when no photo has been uploaded yet. #}
+{% macro avatar(user, size="h-9 w-9 text-sm", colours="bg-white/20") -%}
+{% if user.photo_path %}
+<img src="{{ url_for('profile.photo_file', filename=user.photo_path) }}" alt="" class="{{ size }} rounded-full object-cover">
+{% else %}
+<span class="{{ size }} {{ colours }} rounded-full flex items-center justify-center font-bold" aria-hidden="true">{{ user.initials }}</span>
+{% endif %}
+{%- endmacro %}

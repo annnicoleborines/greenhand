@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} - GreenHands{% endblock %}
+{% block content %}
+<section class="card p-8 text-center max-w-xl mx-auto">
+  <p class="text-sm font-semibold uppercase tracking-wide text-gray-400">
+    {% if code == 403 %}Not allowed{% elif code == 404 %}Not found{% elif code == 413 %}File too large{% elif code == 429 %}Too many requests{% elif code == 503 %}Database unavailable{% else %}Error{% endif %}
+  </p>
+  <h1 class="mt-1 text-5xl font-bold text-brand">{{ code }}</h1>
+  <p class="mt-4 text-gray-600">{{ message }}</p>
+  {% if code == 403 %}
+  <p class="mt-2 text-sm text-gray-400">This page belongs to the other role. Use the sidebar to get back to your own pages.</p>
+  {% elif code == 404 %}
+  <p class="mt-2 text-sm text-gray-400">The link may be old, or the record was removed.</p>
+  {% elif code == 429 %}
+  <p class="mt-2 text-sm text-gray-400">Please wait a minute and try again.</p>
+  {% endif %}
+  {% if code == 503 %}
+  <p class="mt-2 text-sm text-gray-400">Start MySQL (run <code>.\scripts\mysql.ps1</code> in the project folder), then refresh this page.</p>
+  {% endif %}
+  <a href="{{ url_for('main.index') }}" class="btn-primary mt-6 inline-block">Back to home</a>
+</section>
+{% endblock %}

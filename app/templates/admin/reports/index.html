@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Reports - GreenHands{% endblock %}
+{% block page_title %}Reports{% endblock %}
+{% block page_subtitle %}Summary reports on screen, as a CSV download, or in a printable view.{% endblock %}
+{% block content %}
+<div class="grid gap-6 md:grid-cols-3">
+  {% for info in reports %}
+  <article class="card p-6 flex flex-col">
+    <span class="h-11 w-11 rounded-lg bg-brand-light text-brand flex items-center justify-center" aria-hidden="true">{{ nav_icon("chart") }}</span>
+    <h2 class="mt-4 text-lg font-bold text-brand-dark">{{ info.title }}</h2>
+    <p class="mt-1 text-sm text-gray-500 flex-1">{{ info.description }}</p>
+    {% if info.uses_filters %}<p class="mt-2 text-xs text-gray-400">Filters: date range, activity status</p>{% endif %}
+    <a href="{{ url_for('admin_reports.show', name=info.name) }}" class="btn-primary mt-5 self-start">Open report<span class="sr-only">: {{ info.title }}</span></a>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

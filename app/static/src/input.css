@@ -1,0 +1,62 @@
+/*
+ * Tailwind v4 entry file.
+ * In v4 the old tailwind.config.js is replaced by this @theme block, so all
+ * brand colours live here (brief, Section 10: "keep the color values in config").
+ */
+@import "tailwindcss";
+
+/* Scan templates and Python files for class names. */
+@source "../../templates";
+@source "../../controllers";
+@source "../../navigation.py";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand greens */
+  --color-brand: #1e6b3a;        /* header, sidebar, primary buttons */
+  --color-brand-dark: #16522c;   /* hover on primary buttons */
+  --color-brand-light: #e8f3ec;  /* hover / selected states */
+  --color-page: #f4f8f5;         /* page background (light gray-green) */
+
+  /* Status badge colours */
+  --color-status-green: #16a34a;
+  --color-status-amber: #d97706;
+  --color-status-red: #dc2626;
+  --color-status-gray: #6b7280;
+}
+
+/* Reusable pieces. `@utility` (Tailwind v4) lets other rules @apply them. */
+@utility card {
+  @apply bg-white rounded-xl shadow-sm border border-gray-100;
+}
+@utility btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+}
+@utility btn-secondary {
+  @apply inline-flex items-center justify-center rounded-lg border border-brand bg-white px-4 py-2 text-sm font-semibold text-brand hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2;
+}
+@utility btn-outline-blue {
+  @apply inline-flex items-center rounded-lg border border-blue-600 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50;
+}
+@utility btn-outline-red {
+  @apply inline-flex items-center rounded-lg border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50;
+}
+@utility badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold;
+}
+@utility flash {
+  @apply rounded-lg px-4 py-3 text-sm;
+}
+
+@layer components {
+  .badge-green { @apply badge bg-green-100 text-green-800; }
+  .badge-amber { @apply badge bg-amber-100 text-amber-800; }
+  .badge-red   { @apply badge bg-red-100 text-red-800; }
+  .badge-gray  { @apply badge bg-gray-100 text-gray-700; }
+
+  .flash-success { @apply flash bg-green-50 text-green-800 border border-green-200; }
+  .flash-error   { @apply flash bg-red-50 text-red-800 border border-red-200; }
+  .flash-warning { @apply flash bg-amber-50 text-amber-800 border border-amber-200; }
+  .flash-info    { @apply flash bg-blue-50 text-blue-800 border border-blue-200; }
+}

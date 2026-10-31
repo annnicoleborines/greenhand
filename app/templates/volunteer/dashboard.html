@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - GreenHands{% endblock %}
+{% block page_title %}Welcome, {{ user.first_name }}!{% endblock %}
+{% block page_subtitle %}Here is what you can do today.{% endblock %}
+{% block content %}
+<section class="relative overflow-hidden rounded-xl bg-brand text-white shadow-sm">
+  <img src="{{ url_for('static', filename='images/banner.svg') }}" alt="" class="absolute inset-0 h-full w-full object-cover opacity-90">
+  <div class="relative px-6 py-12 sm:px-10 sm:py-16 max-w-2xl">
+    <h2 class="text-3xl sm:text-4xl font-bold leading-tight">Be the Change.</h2>
+    <p class="mt-2 text-lg text-white/90">Join. Volunteer. Make an Impact.</p>
+  </div>
+</section>
+
+<div class="mt-8 grid gap-6 md:grid-cols-3">
+  {% set cards = [
+    ("Activities", "Browse open tree-planting activities and find one near you.", "Browse Activities", url_for("activities.list_activities"), "tree"),
+    ("My Registrations", "Track the status of every activity you signed up for.", "View Registrations", url_for("registrations.list_registrations"), "list"),
+    ("My Profile", "Keep your contact details and emergency contact up to date.", "Edit Profile", url_for("profile.view"), "user"),
+  ] %}
+  {% for title, text, button, url, icon in cards %}
+  <article class="card p-6 flex flex-col">
+    <span class="h-11 w-11 rounded-lg bg-brand-light text-brand flex items-center justify-center" aria-hidden="true">
+      {{ nav_icon(icon) }}
+    </span>
+    <h3 class="mt-4 text-lg font-bold text-brand-dark">{{ title }}</h3>
+    <p class="mt-1 text-sm text-gray-500 flex-1">{{ text }}</p>
+    <a href="{{ url }}" class="btn-primary mt-5 self-start">{{ button }}</a>
+  </article>
+  {% endfor %}
+</div>
+
+{# ---------- Upcoming activities: the three soonest OPEN activities ---------- #}
+<section class="card mt-8">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-brand-dark">Upcoming activities</h2>
+    <a href="{{ url_for('activities.list_activities') }}" class="text-sm font-medium text-brand hover:underline">See all</a>
+  </div>
+  {% if upcoming %}
+  <ul class="divide-y divide-gray-100">
+    {% for activity in upcoming %}
+    <li class="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
+        <a href="{{ url_for('activities.detail', activity_id=activity.id) }}" class="font-semibold text-brand-dark hover:underline">{{ activity.title }}</a>
+        <p class="mt-0.5 text-sm text-gray-500">
+          {{ activity.activity_date.strftime('%a, %b %d, %Y') }} &middot;
+          {{ activity.start_time.strftime('%I:%M %p').lstrip('0') }} - {{ activity.end_time.strftime('%I:%M %p').lstrip('0') }} &middot;
+          {{ activity.location_name }}
+        </p>
+      </div>
+      <span class="text-sm font-semibold {% if activity.is_full %}text-red-600{% else %}text-brand{% endif %}">
+        {% if activity.is_full %}Full{% else %}{{ activity.available_slots }} of {{ activity.max_volunteers }} slots left{% endif %}
+      </span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="px-5 py-10 text-center">
+    <p class="text-gray-500">No upcoming activities yet.</p>
+    <p class="mt-1 text-sm text-gray-400">New activities will appear here as soon as an administrator opens them.</p>
+  </div>
+  {% endif %}
+</section>
+
+<p class="mt-10 text-center text-sm text-gray-500 italic">Together for a Cleaner, Greener, and Healthier Tomorrow.</p>
+{% endblock %}

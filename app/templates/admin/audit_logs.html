@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "partials/_forms.html" import text_field, select_field %}
+{% from "partials/_pagination.html" import paginate %}
+{% block title %}Audit Logs - GreenHands{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
+{% block page_subtitle %}Every add, edit, delete, review and login event, newest first.{% endblock %}
+{% block content %}
+{% set form = filters.as_query_args() %}
+<form method="get" action="{{ url_for('admin_audit.list_logs') }}" class="card p-4 sm:p-6" role="search" aria-label="Filter audit logs">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+    {{ select_field("action", "Action", action_choices, form, {}, placeholder="All actions") }}
+    {{ text_field("username", "Username", form, {}, type="search", hint="Who did it (partial match).") }}
+    {{ text_field("date_from", "From date", form, {}, type="date") }}
+    {{ text_field("date_to", "To date", form, {}, type="date") }}
+    <div class="flex items-end gap-3">
+      <button type="submit" class="btn-primary">Apply</button>
+      {% if filters.is_filtered %}<a href="{{ url_for('admin_audit.list_logs') }}" class="btn-secondary">Clear</a>{% endif %}
+    </div>
+  </div>
+</form>
+
+<section class="card mt-6">
+  <div class="px-5 py-4 border-b border-gray-100">
+    <h2 class="text-lg font-bold text-brand-dark">{{ page.total }} entr{{ "y" if page.total == 1 else "ies" }}{% if filters.is_filtered %} matching the filters{% endif %}</h2>
+  </div>
+  {% if page.items %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+        <tr>
+          <th scope="col" class="px-5 py-3">When</th>
+          <th scope="col" class="px-5 py-3">Who</th>
+          <th scope="col" class="px-5 py-3">Action</th>
+          <th scope="col" class="px-5 py-3">Record</th>
+          <th scope="col" class="px-5 py-3">Details</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for entry in page.items %}
+        <tr class="hover:bg-brand-light/40 align-top">
+          <td class="px-5 py-3 text-gray-500 whitespace-nowrap">{{ entry.timestamp.strftime('%b %d, %Y %H:%M:%S') if entry.timestamp else '' }}</td>
+          <td class="px-5 py-3 font-medium">{{ entry.username }}<span class="block text-xs font-normal text-gray-400">user #{{ entry.user_id }}</span></td>
+          <td class="px-5 py-3"><code class="rounded bg-gray-100 px-1.5 py-0.5 text-xs">{{ entry.action }}</code></td>
+          <td class="px-5 py-3 text-gray-500 whitespace-nowrap">{{ entry.entity }}{% if entry.record_reference %} #{{ entry.record_reference }}{% endif %}</td>
+          <td class="px-5 py-3 text-gray-600">{{ entry.details or "" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">{% if filters.is_filtered %}No entries match these filters.{% else %}No audit entries yet.{% endif %}</p>
+    {% if filters.is_filtered %}<a href="{{ url_for('admin_audit.list_logs') }}" class="btn-secondary mt-4">Clear filters</a>{% endif %}
+  </div>
+  {% endif %}
+  {{ paginate(page, "admin_audit.list_logs", noun="entries", **filters.as_query_args()) }}
+</section>
+{% endblock %}

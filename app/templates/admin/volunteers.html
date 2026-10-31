@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% from "partials/_badge.html" import status_badge %}
+{% from "partials/_pagination.html" import paginate %}
+{% block title %}Volunteers - GreenHands{% endblock %}
+{% block page_title %}Volunteers{% endblock %}
+{% block page_subtitle %}Search volunteer accounts, deactivate or reactivate them, and reset forgotten passwords.{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="flex flex-col gap-4 px-5 py-4 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-lg font-bold text-brand-dark">
+      {{ page.total }} volunteer{{ "" if page.total == 1 else "s" }}{% if search %} matching "{{ search }}"{% endif %}
+    </h2>
+    <form method="get" action="{{ url_for('admin_volunteers.list_volunteers') }}" class="flex gap-2" role="search">
+      <label for="q" class="sr-only">Search volunteers</label>
+      <input id="q" name="q" type="search" value="{{ search }}" placeholder="Name, username or email"
+             class="block w-full sm:w-64 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:border-brand focus:ring-brand/30">
+      <button type="submit" class="btn-primary">Search</button>
+      {% if search %}<a href="{{ url_for('admin_volunteers.list_volunteers') }}" class="btn-secondary">Clear</a>{% endif %}
+    </form>
+  </div>
+
+  {% if page.items %}
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+        <tr>
+          <th scope="col" class="px-5 py-3">Name</th>
+          <th scope="col" class="px-5 py-3">Username</th>
+          <th scope="col" class="px-5 py-3">Email</th>
+          <th scope="col" class="px-5 py-3">Phone</th>
+          <th scope="col" class="px-5 py-3">Status</th>
+          <th scope="col" class="px-5 py-3 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for user in page.items %}
+        {# The action URLs carry the search and page so the redirect returns here. #}
+        {% set args = {"user_id": user.id, "q": search or none, "page": page.page} %}
+        <tr class="hover:bg-brand-light/40">
+          <td class="px-5 py-3 font-medium">{{ user.full_name }}</td>
+          <td class="px-5 py-3 text-gray-500">{{ user.username }}</td>
+          <td class="px-5 py-3 text-gray-500 break-all">{{ user.email }}</td>
+          <td class="px-5 py-3 text-gray-500">{{ user.phone or "-" }}</td>
+          <td class="px-5 py-3">{{ status_badge(user.status) }}</td>
+          <td class="px-5 py-3">
+            <div class="flex flex-wrap justify-end gap-2">
+              {% if user.is_active %}
+              <form method="post" action="{{ url_for('admin_volunteers.deactivate', **args) }}"
+                    onsubmit="return confirm('Deactivate {{ user.username }}? They will no longer be able to log in.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline-red text-xs py-1">Deactivate</button>
+              </form>
+              {% else %}
+              <form method="post" action="{{ url_for('admin_volunteers.activate', **args) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-secondary text-xs py-1 px-3">Activate</button>
+              </form>
+              {% endif %}
+              <form method="post" action="{{ url_for('admin_volunteers.reset_password', **args) }}"
+                    onsubmit="return confirm('Reset the password of {{ user.username }}? A temporary password will be shown to you once.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn-outline-blue text-xs py-1">Reset password</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">{% if search %}No volunteers match "{{ search }}".{% else %}No volunteers yet.{% endif %}</p>
+    <p class="mt-1 text-sm text-gray-400">Volunteers appear here as soon as they sign up.</p>
+  </div>
+  {% endif %}
+  {{ paginate(page, "admin_volunteers.list_volunteers", noun="volunteers", q=search or none) }}
+</section>
+{% endblock %}

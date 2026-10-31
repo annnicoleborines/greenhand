@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "partials/_forms.html" import text_field, select_field, textarea_field %}
+{# One template for both pages: `activity` is None on New, the model on Edit. #}
+{% set heading = "Edit Activity" if activity else "New Activity" %}
+{% block title %}{{ heading }} - GreenHands{% endblock %}
+{% block page_title %}{{ heading }}{% endblock %}
+{% block page_subtitle %}
+  {% if activity %}Update {{ activity.title }}. {{ activity.taken_slots }} volunteer{{ "" if activity.taken_slots == 1 else "s" }} currently hold slots.{% else %}Plan a tree-planting activity volunteers can register for.{% endif %}
+{% endblock %}
+{% block content %}
+<section class="card max-w-3xl p-6 sm:p-8">
+  {% if not location_choices %}
+  <div class="flash-warning mb-6">
+    There are no locations yet. <a href="{{ url_for('admin_locations.new_location') }}" class="font-semibold underline">Add a location</a> first.
+  </div>
+  {% endif %}
+  <form method="post"
+        action="{{ url_for('admin_activities.edit_activity', activity_id=activity.id) if activity else url_for('admin_activities.new_activity') }}"
+        class="space-y-8" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <fieldset>
+      <legend class="text-base font-bold text-brand-dark mb-4">What and where</legend>
+      <div class="space-y-5">
+        {{ text_field("title", "Title", form, errors, required=True, hint="3 to 150 characters") }}
+        {{ select_field("location_id", "Location", location_choices, form, errors, required=True, placeholder="-- choose a location --") }}
+        {{ textarea_field("description", "Description", form, errors, rows=4, hint="Optional: what volunteers will do") }}
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend class="text-base font-bold text-brand-dark mb-4">When and how many</legend>
+      <div class="space-y-5">
+        <div class="grid gap-5 sm:grid-cols-3">
+          {{ text_field("activity_date", "Date", form, errors, required=True, type="date", hint=("Any date" if activity else "Today or later")) }}
+          {{ text_field("start_time", "Start time", form, errors, required=True, type="time") }}
+          {{ text_field("end_time", "End time", form, errors, required=True, type="time", hint="Must be after the start time") }}
+        </div>
+        {{ text_field("max_volunteers", "Maximum volunteers", form, errors, required=True, type="number", hint="1 to 1000") }}
+        {{ textarea_field("requirements", "Requirements", form, errors, rows=3, hint="Optional: age limit, clothing, tools to bring") }}
+      </div>
+    </fieldset>
+
+    <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2 border-t border-gray-100">
+      <a href="{{ url_for('admin_activities.list_activities') }}" class="btn-secondary mt-4">Cancel</a>
+      <button type="submit" class="btn-primary mt-4 px-6">{{ "Save changes" if activity else "Create activity" }}</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Activity placeholder">
+  <rect width="640" height="400" fill="#E8F3EC"/>
+  <ellipse cx="320" cy="420" rx="400" ry="80" fill="#cfe7d8"/>
+  <path d="M320 360V220" stroke="#1E6B3A" stroke-width="10" stroke-linecap="round"/>
+  <path d="M320 280c-60 0-100-40-110-100 60 0 100 40 110 100z" fill="#4ade80"/>
+  <path d="M320 320c60 0 100-40 110-100-60 0-100 40-110 100z" fill="#2E8B57"/>
+</svg>

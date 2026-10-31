@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Notifications - GreenHands{% endblock %}
+{% block page_title %}Notifications{% endblock %}
+{% block page_subtitle %}Updates about your registrations and activities.{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="flex flex-col gap-3 px-5 py-4 border-b border-gray-100 sm:flex-row sm:items-center sm:justify-between">
+    <h2 class="text-lg font-bold text-brand-dark">
+      {% if unread %}{{ unread }} unread{% else %}All caught up{% endif %}
+    </h2>
+    {% if unread %}
+    <form method="post" action="{{ url_for('notifications.mark_all_read') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn-secondary text-sm">Mark all as read</button>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if notifications %}
+  <ul class="divide-y divide-gray-100">
+    {% for note in notifications %}
+    <li id="notification-{{ note.id }}" class="flex items-start gap-4 px-5 py-4 {% if not note.is_read %}bg-brand-light/40{% endif %}">
+      <span class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full {% if note.is_read %}bg-gray-200{% else %}bg-brand{% endif %}" aria-hidden="true"></span>
+      <div class="min-w-0 flex-1">
+        <p class="text-xs font-semibold uppercase tracking-wide {% if note.is_read %}text-gray-400{% else %}text-brand{% endif %}">
+          {{ type_labels.get(note.type, note.type|replace("_", " ")|capitalize) }}
+          {% if not note.is_read %}<span class="sr-only">(unread)</span>{% endif %}
+        </p>
+        <p class="mt-0.5 text-sm {% if note.is_read %}text-gray-600{% else %}text-gray-800 font-medium{% endif %}">{{ note.message }}</p>
+        <p class="mt-1 text-xs text-gray-400">{{ note.created_at.strftime('%b %d, %Y %H:%M') if note.created_at else '' }}</p>
+      </div>
+      {% if not note.is_read %}
+      <form method="post" action="{{ url_for('notifications.mark_read', notification_id=note.id) }}" class="shrink-0">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-secondary text-xs py-1 px-3">Mark as read<span class="sr-only">: {{ note.message }}</span></button>
+      </form>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="px-5 py-12 text-center">
+    <p class="text-gray-500">No notifications yet.</p>
+    <p class="mt-1 text-sm text-gray-400">You will be told here when something happens to your registrations.</p>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

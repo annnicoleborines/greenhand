@@ -1,0 +1,135 @@
+{% from "partials/_avatar.html" import avatar %}
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="GreenHands: register for tree-planting activities, track your schedule and let administrators review sign-ups.">
+  <title>{% block title %}GreenHands{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/logo.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body class="min-h-full bg-page text-gray-800 font-sans">
+{% block body %}
+{# Keyboard users press Tab once and jump past the header and sidebar. #}
+<a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand focus:shadow-lg">Skip to main content</a>
+{# ---------- Top header bar (built once here, every page extends this file) ---------- #}
+<header class="bg-brand text-white">
+  <div class="flex items-center justify-between h-16 px-4 sm:px-6">
+    <div class="flex items-center gap-3">
+      <button id="sidebar-toggle" type="button"
+              class="md:hidden rounded-lg p-2 hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+              aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+        </svg>
+      </button>
+      <a href="{{ url_for('main.index') }}" class="flex items-center gap-2 font-bold text-lg">
+        <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="" class="h-8 w-8">
+        <span>GreenHands</span>
+      </a>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="flex items-center gap-4">
+      <a href="{{ nav.notifications_url }}" class="relative rounded-full p-2 hover:bg-white/10" aria-label="Notifications">
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        {% if nav.unread_count %}
+        <span class="absolute -top-0.5 -right-0.5 min-w-5 h-5 px-1 rounded-full bg-amber-400 text-brand-dark text-xs font-bold flex items-center justify-center">
+          {{ nav.unread_count }}
+        </span>
+        {% endif %}
+      </a>
+      <div class="flex items-center gap-3">
+        {{ avatar(current_user) }}
+        <span class="hidden sm:block leading-tight">
+          <span class="block text-sm font-semibold">{{ current_user.full_name }}</span>
+          <span class="block text-xs text-white/70">{{ current_user.role_name.value|capitalize }}</span>
+        </span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</header>
+
+<div class="flex min-h-[calc(100vh-4rem)]">
+  {# ---------- Sidebar: dark green on desktop, slide-in menu on mobile ---------- #}
+  <aside id="sidebar"
+         class="fixed inset-y-0 left-0 z-40 w-64 -translate-x-full transform bg-brand text-white transition-transform duration-200 md:static md:translate-x-0 md:flex md:flex-col pt-16 md:pt-0"
+         aria-label="Main navigation">
+    <nav class="flex-1 px-3 py-6 space-y-1">
+      {% for item in nav.items %}
+      <a href="{{ item.url }}"
+         class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition
+                {% if item.active %}bg-brand-light text-brand-dark{% else %}text-white/90 hover:bg-white/10{% endif %}"
+         {% if item.active %}aria-current="page"{% endif %}>
+        <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">{{ item.icon|safe }}</span>
+        {{ item.label }}
+      </a>
+      {% endfor %}
+      {% if current_user.is_authenticated %}
+      <form method="post" action="{{ url_for('auth.logout') }}" class="pt-4">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-white/90 hover:bg-white/10">
+          <span class="h-5 w-5 flex items-center justify-center" aria-hidden="true">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </span>
+          Logout
+        </button>
+      </form>
+      {% endif %}
+    </nav>
+  </aside>
+  <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-black/40 md:hidden"></div>
+
+  {# ---------- Content area ---------- #}
+  <main id="main" tabindex="-1" class="flex-1 min-w-0 px-4 py-6 sm:px-8 focus:outline-none">
+    {% include "partials/_flash.html" %}
+    {% block page_header %}
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-brand-dark">{% block page_title %}{% endblock %}</h1>
+      <p class="mt-1 text-sm text-gray-500">{% block page_subtitle %}{% endblock %}</p>
+    </div>
+    {% endblock %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+{% endblock %}
+{# Scripts sit outside the body block so pages that replace it (login, sign-up) get them too. #}
+<script>
+  // Loading state: once a form is really submitting, disable its button so a double
+  // click cannot send the request twice (the server guards this too, with locks).
+  document.addEventListener("submit", function (event) {
+    if (event.defaultPrevented) return;  // a confirm() dialog was cancelled
+    var button = event.submitter || event.target.querySelector('button[type="submit"]');
+    if (!button) return;
+    setTimeout(function () {  // after this tick, so the button's own value is still posted
+      button.disabled = true;
+      button.setAttribute("aria-busy", "true");
+      if (button.childElementCount === 0) button.textContent = "Please wait\u2026";
+    }, 0);
+  });
+
+  // Open/close the sidebar on small screens.
+  (function () {
+    var toggle = document.getElementById("sidebar-toggle");
+    var sidebar = document.getElementById("sidebar");
+    var backdrop = document.getElementById("sidebar-backdrop");
+    if (!toggle || !sidebar || !backdrop) return;
+    function setOpen(open) {
+      sidebar.classList.toggle("-translate-x-full", !open);
+      backdrop.classList.toggle("hidden", !open);
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    toggle.addEventListener("click", function () {
+      setOpen(sidebar.classList.contains("-translate-x-full"));
+    });
+    backdrop.addEventListener("click", function () { setOpen(false); });
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") setOpen(false); });
+  })();
+</script>
+</body>
+</html>
